@@ -1,0 +1,35 @@
+name: uber
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  #- mamba # le laisser dans base
+  - python-dotenv
+  - requests
+  - numpy
+  - pandas
+  - scipy
+  - plotly
+  - statsmodels
+  - ipykernel # ne pas installer jupyterlab qui est dans base
+  - notebook
+  - scikit-learn
+  - glom
+  - conda-bash-completion
+  - yaml
+  - nbformat # pour notebook
+  - geopy # pour NOMINATIM
+  #- optuna
+  # Geo+GIS
+  - geopandas=0.12.2
+  - pyproj=3.4.1
+  - shapely=2.0.1
+  - fiona=1.9.0
+  #- codecarbon # pour calculer le cout cpu, memoire + environemetal
+  #- streamlit
+  #- seaborn
+  #- pip:
+  #  - -r file:env_jedha_requirements.txt
+
