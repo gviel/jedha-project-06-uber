@@ -1,5 +1,6 @@
-# les projets sont mis dans des dépôts à part
-Project_*/
+# on ne met pas les données trop volumineuses
+uber-trip-data.zip
+uber-trip-data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
