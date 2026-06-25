@@ -30,23 +30,23 @@ The notebook kernel must be set to the `uber` conda environment (`ipykernel` is 
 ## Versioning — règles de commit & push
 
 ### Deux branches, deux usages
-- `gviel` : branche de travail complète (Claude Code inclus — `.claude/`, `CLAUDE.md`, `scripts/`, `exports/`)
+- `dev` : branche de travail complète (Claude Code inclus — `.claude/`, `CLAUDE.md`, `scripts/`, `exports/`)
 - `main` : branche livrable (uniquement les fichiers visibles du correcteur)
 
-### Workflow standard (sur gviel)
+### Workflow standard (sur dev)
 ```bash
 git add <fichiers>
 git commit -m "..."
-git push origin gviel
+git push origin dev
 ```
 
 ### Publication vers main — règle absolue
-Ne jamais faire `git merge gviel` ni committer directement sur `main`.
+Ne jamais faire `git merge dev` ni committer directement sur `main`.
 Utiliser exclusivement le script de sync :
 ```bash
 bash scripts/sync_main.sh                        # message demandé interactivement
-bash scripts/sync_main.sh gviel "§X.Y résumé"   # message en argument
-git push origin gviel && git push origin main
+bash scripts/sync_main.sh dev "§X.Y résumé"   # message en argument
+git push origin dev && git push origin main
 ```
 
 ## Architecture
