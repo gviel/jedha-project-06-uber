@@ -1,6 +1,24 @@
 # on ne met pas les données trop volumineuses
 uber-trip-data.zip
 uber-trip-data
+*.ods
+resources/
+exports/
+dashboard/dashboard_sept2w.parquet
+data_streamlit/
+
+# secrets locaux (ne jamais commiter)
+.env
+.streamlit/secrets.toml
+
+# fichiers temporaires
+Uber_GV.ipynb.bak
+.claude/settings.local.json
+prompt.txt
+data/_archive/
+
+# archive locale
+data/_archive/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

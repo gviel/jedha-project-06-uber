@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.9
+  - python=3.12
   - pip
   #- mamba # le laisser dans base
   - python-dotenv
@@ -23,12 +23,16 @@ dependencies:
   - geopy # pour NOMINATIM
   #- optuna
   # Geo+GIS
-  - geopandas=0.12.2
-  - pyproj=3.4.1
-  - shapely=2.0.1
-  - fiona=1.9.0
+  - geopandas #=0.12.2
+  - pyproj #=3.4.1
+  - shapely #=2.0.1
+  - fiona #=1.9.0
+  - h3-py     # binning hexagonal Uber H3
+  - boto3     # upload S3 (prepare_data.py)
+  - s3fs      # lecture S3 depuis pandas (dashboard prod)
+  - python-kaleido   # export PNG des graphiques (sans carte)
   #- codecarbon # pour calculer le cout cpu, memoire + environemetal
-  #- streamlit
+  - streamlit
   #- seaborn
   #- pip:
   #  - -r file:env_jedha_requirements.txt
