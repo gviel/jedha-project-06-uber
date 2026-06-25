@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/nb_*)",
+      "Bash(python3 scripts/nb_*)",
+      "Bash(python3 -c *)",
+      "Bash(python3 - << *)",
+      "Bash(python3 << *)",
+      "Bash(conda run -n uber python *)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
