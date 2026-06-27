@@ -14,11 +14,14 @@ Uber_GV.ipynb              Notebook d'analyse principal
 dashboard/
   app.py                   Dashboard Streamlit interactif
   prepare_data.py          Script de préparation du dataset
+  dashboard_sept2w.parquet Dataset préparé (non versionné)
 data/
   uber-trip-data/2014/     CSV bruts (non versionnés)
-  dashboard_sept2w.parquet Dataset préparé pour le dashboard
+  stats_by_month.csv       Statistiques par mois (générées par tools/stats.sh)
 exports/                   Figures générées (non versionnées)
+tools/                     Scripts d'extraction géo et statistiques
 env_uber.yml               Environnement conda
+requirements.txt           Dépendances Python (Streamlit Cloud)
 ```
 
 ---
@@ -60,13 +63,12 @@ jupyter notebook Uber_GV.ipynb
 
 ```bash
 conda activate uber
-cd /chemin/vers/Project_06_Uber
 python dashboard/prepare_data.py
 ```
 
-Génère `data/dashboard_sept2w.parquet` (~480 k courses, 2 premières semaines de septembre 2014, 1,6 Mo).
+Génère `dashboard/dashboard_sept2w.parquet` (~480 k courses, 2 premières semaines de septembre 2014) et l'uploade sur S3.
 
-### Lancement
+### Lancement local
 
 ```bash
 conda activate uber
@@ -76,23 +78,30 @@ streamlit run dashboard/app.py
 
 ### Fonctionnalités
 
-**Filtres (sidebar)**
+**Sidebar**
 
 - Sélection du jour de la semaine (boutons pills Lun–Dim)
-- Plage horaire 0h–23h (slider) ou mode nuit avec traversée de minuit (ex. 19h→06h)
-- Taille d'échantillon N — sampling stratifié par heure : chaque heure reçoit une part de N proportionnelle à son poids dans la sélection
 
 **Onglet H3 — Binning hexagonal**
 
-- Slider de résolution 6–10 (résolution 8 ≈ 0,1 km²/hex, adapté aux blocs de rues NYC)
-- Carte choroplèthe colorée par densité de pickups (YlOrRd)
+- Résolution hexagonale 6–10 (résolution 8 ≈ 0,1 km²/hex, adapté aux blocs de rues NYC)
+- Tempo d'animation par heure
+- Budget total de points N — sampling stratifié, chaque heure reçoit une fraction proportionnelle à son poids
+- Carte choroplèthe animée (heure par heure) colorée par densité de pickups
 
-**Onglet DBSCAN / HDBSCAN**
+**Onglet DBSCAN**
 
-- Toggle DBSCAN ↔ HDBSCAN
-- Paramètres ajustables : métrique (manhattan recommandé pour la grille NYC), eps, min\_samples, min\_cluster\_size, cluster\_selection\_method
-- Carte des clusters colorés par importance + centroides proportionnels
-- Métriques : nombre de hot-zones, points classifiés, points bruit
+- Métrique de distance (manhattan recommandé pour la grille NYC)
+- Seuil minimum de points par heure (budget adaptatif)
+- Paramètres : `eps` (m), `min_samples`
+- Carte animée des clusters + centroides proportionnels au volume
+
+**Onglet HDBSCAN**
+
+- Métrique de distance
+- Seuil minimum de points par heure
+- Paramètres : `min_cluster_size`, `min_samples`, `cluster_selection_method` (leaf / eom)
+- Carte animée des clusters + centroides proportionnels au volume
 
 ---
 
@@ -106,3 +115,23 @@ streamlit run dashboard/app.py
 | H3 | `resolution` | Couverture exhaustive, reproductible, sans hyperparamètre de distance |
 
 Métrique de distance : **Manhattan** (`|Δx| + |Δy|`) — cohérente avec la grille orthogonale des rues de NYC.
+
+---
+
+## Déploiement Streamlit Community Cloud
+
+L'app est déployable directement depuis la branche `main` :
+
+- **Repository** : `gviel/jedha-project-06-uber`
+- **Branch** : `main`
+- **Main file** : `dashboard/app.py`
+
+Les données sont lues depuis S3 (`s3://cdsd-uber-data/dashboard_sept2w.parquet`).
+Ajouter les credentials AWS dans les secrets de l'app (Settings → Secrets) :
+
+```toml
+[aws]
+access_key_id = "AKIA..."
+secret_access_key = "..."
+region = "eu-west-3"
+```
