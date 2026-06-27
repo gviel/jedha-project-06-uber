@@ -310,14 +310,6 @@ with st.sidebar:
         st.stop()
     selected_dow = int(selected_pill.split("(")[1].rstrip(")"))
 
-    st.divider()
-
-    N_SAMPLE = st.number_input(
-        "Total points H3 (journée)", min_value=200, max_value=50_000,
-        value=2_000, step=500,
-        help="Budget total de points pour la carte H3. Chaque heure reçoit une fraction proportionnelle à son volume de pickups. Réduire pour accélérer le calcul.",
-    )
-    st.caption("Changer un paramètre relance le calcul (mis en cache).")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Onglets
@@ -325,7 +317,9 @@ with st.sidebar:
 dow_label = DOW_LABELS[selected_dow]
 st.markdown(f"**{dow_label}**")
 
-tab_h3, tab_clust = st.tabs(["H3 — Binning hexagonal", "Clustering DBSCAN / HDBSCAN"])
+tab_h3, tab_dbscan, tab_hdbscan = st.tabs([
+    "H3 — Binning hexagonal", "DBSCAN", "HDBSCAN"
+])
 
 # ═══════════════════════════════════════════════════════════════
 # Onglet H3
@@ -349,58 +343,89 @@ with tab_h3:
             value=1500,
             format_func=lambda v: f"{v/1000:.1f} s/h",
         )
+        N_SAMPLE = st.number_input(
+            "Total points (journée)", min_value=200, max_value=50_000,
+            value=24_000, step=500,
+            help="Budget total de points pour la carte H3. Chaque heure reçoit une fraction proportionnelle à son volume de pickups.",
+        )
 
     with col_map:
         fig_h3 = build_h3_fig(selected_dow, resolution, N_SAMPLE, h3_speed)
-        st.plotly_chart(fig_h3, use_container_width=True)
+        st.plotly_chart(fig_h3, width='stretch')
 
 # ═══════════════════════════════════════════════════════════════
-# Onglet Clustering
+# Onglet DBSCAN
 # ═══════════════════════════════════════════════════════════════
-with tab_clust:
+with tab_dbscan:
     col_ctrl, col_map = st.columns([1, 3], gap="medium")
 
     with col_ctrl:
-        st.subheader("Algorithme")
-        algo = st.radio("", ["HDBSCAN", "DBSCAN"], horizontal=True,
-                        label_visibility="collapsed")
-
-        st.divider()
-        st.subheader("Paramètres")
-        metric = st.selectbox(
+        st.subheader("Paramètres DBSCAN")
+        db_metric = st.selectbox(
             "Métrique de distance", ["manhattan", "euclidean"],
+            key="db_metric",
             help="manhattan = adapté à la grille orthogonale des rues de NYC",
         )
-        hour_threshold = st.slider(
+        db_threshold = st.slider(
             "Min points / heure", 200, 2000, 500, step=100,
+            key="db_threshold",
             help="Seuil minimum garanti pour l'heure la plus creuse. Le budget total (N_carte) est calculé automatiquement : N_carte = seuil / p_min.",
         )
-        clust_speed = st.select_slider(
+        db_speed = st.select_slider(
             "Tempo animation (s/heure)",
             options=[5000, 6000, 8000, 10000],
             value=5000,
+            key="db_speed",
             format_func=lambda v: f"{v//1000} s/h",
         )
-
-        if algo == "DBSCAN":
-            eps   = st.slider("eps (m)", 30, 500, 100, step=10,
-                              help="~1 pâté de maisons NYC ≈ 80–120 m")
-            min_s = st.slider("min_samples", 3, 50, 10)
-            fig_clust = build_cluster_fig(
-                selected_dow, algo, hour_threshold, metric, clust_speed,
-                eps=eps, min_s_db=min_s,
-            )
-        else:
-            min_cs = st.slider("min_cluster_size", 10, 200, 50, step=5)
-            min_s  = st.slider("min_samples", 1, 30, 5)
-            method = st.radio(
-                "cluster_selection_method", ["leaf", "eom"],
-                help="**leaf** = granulaire (recommandé)  |  **eom** = stable (tend à tout fusionner)",
-            )
-            fig_clust = build_cluster_fig(
-                selected_dow, algo, hour_threshold, metric, clust_speed,
-                min_cs=min_cs, min_s_hdb=min_s, method=method,
-            )
+        eps   = st.slider("eps (m)", 30, 500, 100, step=10,
+                          key="db_eps",
+                          help="~1 pâté de maisons NYC ≈ 80–120 m")
+        db_mins = st.slider("min_samples", 3, 50, 10, key="db_mins")
 
     with col_map:
-        st.plotly_chart(fig_clust, use_container_width=True)
+        fig_dbscan = build_cluster_fig(
+            selected_dow, "DBSCAN", db_threshold, db_metric, db_speed,
+            eps=eps, min_s_db=db_mins,
+        )
+        st.plotly_chart(fig_dbscan, width='stretch')
+
+# ═══════════════════════════════════════════════════════════════
+# Onglet HDBSCAN
+# ═══════════════════════════════════════════════════════════════
+with tab_hdbscan:
+    col_ctrl, col_map = st.columns([1, 3], gap="medium")
+
+    with col_ctrl:
+        st.subheader("Paramètres HDBSCAN")
+        hdb_metric = st.selectbox(
+            "Métrique de distance", ["manhattan", "euclidean"],
+            key="hdb_metric",
+            help="manhattan = adapté à la grille orthogonale des rues de NYC",
+        )
+        hdb_threshold = st.slider(
+            "Min points / heure", 200, 2000, 500, step=100,
+            key="hdb_threshold",
+            help="Seuil minimum garanti pour l'heure la plus creuse. Le budget total (N_carte) est calculé automatiquement : N_carte = seuil / p_min.",
+        )
+        hdb_speed = st.select_slider(
+            "Tempo animation (s/heure)",
+            options=[5000, 6000, 8000, 10000],
+            value=5000,
+            key="hdb_speed",
+            format_func=lambda v: f"{v//1000} s/h",
+        )
+        hdb_mincs = st.slider("min_cluster_size", 10, 200, 50, step=5, key="hdb_mincs")
+        hdb_mins  = st.slider("min_samples", 1, 30, 5, key="hdb_mins")
+        hdb_method = st.radio(
+            "cluster_selection_method", ["leaf", "eom"],
+            key="hdb_method",
+            help="**leaf** = granulaire (recommandé)  |  **eom** = stable (tend à tout fusionner)",
+        )
+
+    with col_map:
+        fig_hdbscan = build_cluster_fig(
+            selected_dow, "HDBSCAN", hdb_threshold, hdb_metric, hdb_speed,
+            min_cs=hdb_mincs, min_s_hdb=hdb_mins, method=hdb_method,
+        )
+        st.plotly_chart(fig_hdbscan, width='stretch')
