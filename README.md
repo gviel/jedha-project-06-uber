@@ -118,6 +118,12 @@ Métrique de distance : **Manhattan** (`|Δx| + |Δy|`) — cohérente avec la g
 
 ---
 
+## Dashboard en production
+
+👉 **https://jedha-project-06-uber-e5a6exs9vw6pv6o6onweus.streamlit.app/**
+
+---
+
 ## Déploiement Streamlit Community Cloud
 
 L'app est déployable directement depuis la branche `main` :
