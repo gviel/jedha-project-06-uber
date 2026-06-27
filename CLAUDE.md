@@ -30,22 +30,20 @@ The notebook kernel must be set to the `uber` conda environment (`ipykernel` is 
 ## Versioning — règles de commit & push
 
 ### Deux branches, deux usages
-- `dev` : branche de travail complète (Claude Code inclus — `.claude/`, `CLAUDE.md`, `scripts/`, `exports/`)
-- `main` : branche livrable (uniquement les fichiers visibles du correcteur)
+- `dev` : branche de travail
+- `main` : branche livrable (déploiement Streamlit Cloud)
 
 ### Workflow standard (sur dev)
 ```bash
 git add <fichiers>
 git commit -m "..."
-git push origin dev
 ```
 
-### Publication vers main — règle absolue
-Ne jamais faire `git merge dev` ni committer directement sur `main`.
-Utiliser exclusivement le script de sync :
+### Publication vers main
 ```bash
-bash scripts/sync_main.sh                        # message demandé interactivement
-bash scripts/sync_main.sh dev "§X.Y résumé"   # message en argument
+git checkout main
+git merge dev
+git checkout dev
 git push origin dev && git push origin main
 ```
 
@@ -56,5 +54,5 @@ git push origin dev && git push origin main
 - `data/` — données brutes (non versionnées — trop volumineuses)
 - `resources/` — références NYC taxi zones (non versionnées)
 - `exports/` — figures générées (non versionnées)
-- `scripts/` — outils CLI pour manipuler le notebook (non versionnés sur main)
+- `scripts/` — outils CLI pour manipuler le notebook
 - `.claude/` — configuration Claude Code (non versionné sur main)
