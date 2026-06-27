@@ -16,7 +16,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 from pyproj import Transformer
-from sklearn.cluster import DBSCAN, HDBSCAN
+from sklearn.cluster import DBSCAN, HDBSCAN, KMeans
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Config
@@ -186,7 +186,7 @@ def build_h3_fig(dow: int, resolution: int, N: int, speed_ms: int) -> go.Figure:
 def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, speed_ms: int,
                       eps: int = 100, min_s_db: int = 10,
                       min_cs: int = 50, min_s_hdb: int = 5,
-                      method: str = "leaf") -> go.Figure:
+                      method: str = "leaf", n_clusters: int = 20) -> go.Figure:
 
     hour_data: dict = {}
     global_max = 1
@@ -215,10 +215,13 @@ def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, spe
         if algo == "DBSCAN":
             labels = DBSCAN(eps=eps, min_samples=min_s_db,
                             metric=metric, n_jobs=-1).fit_predict(X)
-        else:
+        elif algo == "HDBSCAN":
             labels = HDBSCAN(min_cluster_size=min_cs, min_samples=min_s_hdb,
                              cluster_selection_method=method,
                              metric=metric, n_jobs=-1).fit_predict(X)
+        else:  # KMeans
+            labels = KMeans(n_clusters=n_clusters, random_state=42,
+                            n_init="auto").fit_predict(X)
 
         df_s["cluster"] = labels
         df_clean = df_s[df_s["cluster"] >= 0].copy()
@@ -317,8 +320,8 @@ with st.sidebar:
 dow_label = DOW_LABELS[selected_dow]
 st.markdown(f"**{dow_label}**")
 
-tab_h3, tab_dbscan, tab_hdbscan = st.tabs([
-    "H3 — Binning hexagonal", "DBSCAN", "HDBSCAN"
+tab_h3, tab_kmeans, tab_dbscan, tab_hdbscan = st.tabs([
+    "H3 — Binning hexagonal", "KMeans", "DBSCAN", "HDBSCAN"
 ])
 
 # ═══════════════════════════════════════════════════════════════
@@ -352,6 +355,39 @@ with tab_h3:
     with col_map:
         fig_h3 = build_h3_fig(selected_dow, resolution, N_SAMPLE, h3_speed)
         st.plotly_chart(fig_h3, width='stretch')
+
+# ═══════════════════════════════════════════════════════════════
+# Onglet KMeans
+# ═══════════════════════════════════════════════════════════════
+with tab_kmeans:
+    col_ctrl, col_map = st.columns([1, 3], gap="medium")
+
+    with col_ctrl:
+        st.subheader("Paramètres KMeans")
+        km_k = st.slider(
+            "Nombre de clusters (k)", 5, 50, 20,
+            key="km_k",
+            help="Nombre de hot-zones à identifier. Valeur du notebook : 20.",
+        )
+        km_threshold = st.slider(
+            "Min points / heure", 200, 2000, 500, step=100,
+            key="km_threshold",
+            help="Seuil minimum garanti pour l'heure la plus creuse. Le budget total (N_carte) est calculé automatiquement.",
+        )
+        km_speed = st.select_slider(
+            "Tempo animation (s/heure)",
+            options=[5000, 6000, 8000, 10000],
+            value=5000,
+            key="km_speed",
+            format_func=lambda v: f"{v//1000} s/h",
+        )
+
+    with col_map:
+        fig_kmeans = build_cluster_fig(
+            selected_dow, "KMeans", km_threshold, "euclidean", km_speed,
+            n_clusters=km_k,
+        )
+        st.plotly_chart(fig_kmeans, width='stretch')
 
 # ═══════════════════════════════════════════════════════════════
 # Onglet DBSCAN
