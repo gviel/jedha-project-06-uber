@@ -25,16 +25,24 @@ for f in $files; do
     fi
 done
 
-# fichier 2015 contenant
+# fichier 2015 : nouvelle version -> un seul passage awk
 echo "Traitement fichiers 2015..."
-for i in $(seq -w 1 12); do
-    echo "Mois: ${i}"
-    n_lines=$(cat ${data_dir}/2015/*.csv | grep "2015-${i}" | wc -l)
-    let n_lines-- # pour supprimer le comptage de la ligne de header
-    if [[ $n_lines -gt 0 ]]; then
-        echo -e "2015,${i},${n_lines}" >> "${tmpfile}"
-    fi
-done
-
+# au lieu de 12 grep successifs
+# for i in $(seq -w 1 12); do
+#     echo "Mois: ${i}"
+#     n_lines=$(cat ${data_dir}/2015/*.csv | grep "2015-${i}" | wc -l)
+#     let n_lines-- # pour supprimer le comptage de la ligne de header
+#     if [[ $n_lines -gt 0 ]]; then
+#         echo -e "2015,${i},${n_lines}" >> "${tmpfile}"
+#     fi
+# done
+awk 'NR>1 {
+    if (match($0, /2015-[0-9][0-9]/)) {
+        month = substr($0, RSTART+5, 2)
+        count[month]++
+    }
+} END {
+    for (m in count) print "2015," m "," count[m]
+}' ${data_dir}/2015/*.csv >> "${tmpfile}"
 cat "${tmpfile}" | sort >> "${output_file}"
 rm "${tmpfile}"
