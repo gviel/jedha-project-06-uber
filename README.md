@@ -1,5 +1,7 @@
 # JEDHA CDSD Certification (Bloc 3) — Projet #6 Uber
 
+🔗 **Dépôt GitHub** : https://github.com/gviel/jedha-project-06-uber
+
 Identification des **hot-zones** où les chauffeurs Uber devraient se positionner selon le moment de la journée (NYC, 2014).
 
 Dataset : ~4,5 M de courses Uber (avril–septembre 2014) — [Kaggle](https://www.kaggle.com/datasets/fivethirtyeight/uber-pickups-in-new-york-city).
