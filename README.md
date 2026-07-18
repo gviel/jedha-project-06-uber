@@ -1,6 +1,8 @@
 # JEDHA CDSD Certification (Bloc 3) — Projet #6 Uber
 
-🔗 **Dépôt GitHub** : https://github.com/gviel/jedha-project-06-uber
+**Dépôt GitHub** : https://github.com/gviel/jedha-project-06-uber
+
+**Dashboard** : https://jedha-project-06-uber-e5a6exs9vw6pv6o6onweus.streamlit.app/
 
 Identification des **hot-zones** où les chauffeurs Uber devraient se positionner selon le moment de la journée (NYC, 2014).
 
