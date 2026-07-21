@@ -63,3 +63,29 @@ python scripts/nb_sed.py notebook.ipynb 27 "old_text" "new_text"
 # 5. Nettoyer les outputs avant de passer le notebook au LLM
 python scripts/nb_clear_outputs.py notebook.ipynb
 ```
+
+---
+
+## Export des figures
+
+| Script | Rôle |
+|--------|------|
+| `run_and_export.sh` | Ré-exécute le notebook ; exporte en PNG les graphes standards via kaleido (`fig.write_image()`) |
+| `export_maps_png.py` | Capture en PNG les cartes `exports/*.html` (mapbox/maplibre) via Chromium headless (Playwright) |
+
+**Pourquoi deux mécanismes distincts ?** Les cartes basées sur des tuiles (`scatter_map`, `Choroplethmapbox`, styles `carto-positron`/`open-street-map`) ne sont pas exportables en PNG via kaleido : les tuiles de fond chargées depuis un serveur externe souillent ("taint") le canvas WebGL, ce qui bloque toute lecture programmatique de ses pixels — y compris le bouton appareil-photo de Plotly ou un clic droit "Enregistrer l'image" dans un navigateur classique. `export_maps_png.py` contourne le problème en laissant Chromium faire une vraie capture d'écran (compositeur du navigateur, pas de lecture JS du canvas).
+
+```bash
+# installation (une fois) :  playwright est dans env_uber.yml, mais le binaire navigateur
+# doit être téléchargé séparément :
+python -m playwright install chromium
+
+# régénérer tous les PNG des cartes exportées en HTML
+python scripts/export_maps_png.py
+
+# ne regénérer qu'un sous-ensemble
+python scripts/export_maps_png.py exports/2.6_*.html
+
+# forcer même si le .png est plus récent que le .html
+python scripts/export_maps_png.py --force
+```
