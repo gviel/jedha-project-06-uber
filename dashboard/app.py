@@ -365,9 +365,9 @@ with tab_kmeans:
     with col_ctrl:
         st.subheader("Paramètres KMeans")
         km_k = st.slider(
-            "Nombre de clusters (k)", 5, 50, 20,
+            "Nombre de clusters (k)", 5, 50, 21,
             key="km_k",
-            help="Nombre de hot-zones à identifier. Valeur du notebook : 20.",
+            help="Nombre de hot-zones à identifier. Valeur du notebook : 21.",
         )
         km_threshold = st.slider(
             "Min points / heure", 200, 2000, 500, step=100,
