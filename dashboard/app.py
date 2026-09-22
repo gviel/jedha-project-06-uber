@@ -143,7 +143,7 @@ def build_h3_fig(dow: int, resolution: int, N: int, speed_ms: int) -> go.Figure:
 
     def make_choropleth(h: int, show_colorbar: bool = False):
         z = [hour_counts[h].get(c, 0) for c in all_cells]
-        return go.Choroplethmapbox(
+        return go.Choroplethmap(
             geojson=geojson, locations=all_cells, z=z,
             zmin=0, zmax=zmax,
             colorscale="YlOrRd", marker_opacity=0.7, marker_line_width=0,
@@ -169,7 +169,7 @@ def build_h3_fig(dow: int, resolution: int, N: int, speed_ms: int) -> go.Figure:
         data=[make_choropleth(h0, show_colorbar=True)],
         frames=frames,
         layout=go.Layout(
-            mapbox=dict(style=MAP_STYLE, center=NY_CENTER, zoom=10),
+            map=dict(style=MAP_STYLE, center=NY_CENTER, zoom=10),
             height=700,
             margin=dict(l=0, r=0, t=10, b=110),
             annotations=[_note],
@@ -179,8 +179,8 @@ def build_h3_fig(dow: int, resolution: int, N: int, speed_ms: int) -> go.Figure:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Builder Clustering — points + centroides, go.Scattermapbox, 1 trace/frame
-# Tempo minimum 5 s (rendu WebGL + tuiles mapbox)
+# Builder Clustering — points + centroides, go.Scattermap, 1 trace/frame
+# Tempo minimum 5 s (rendu WebGL + tuiles carto)
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_data(show_spinner="Clustering sur 24h …")
 def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, speed_ms: int,
@@ -255,9 +255,9 @@ def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, spe
 
         hour_data[h] = dict(lats=lats, lons=lons, sizes=sizes, colors=colors)
 
-    def make_scatter(h: int) -> go.Scattermapbox:
+    def make_scatter(h: int) -> go.Scattermap:
         d = hour_data[h]
-        return go.Scattermapbox(
+        return go.Scattermap(
             lat=d["lats"], lon=d["lons"],
             mode="markers",
             marker=dict(
@@ -284,7 +284,7 @@ def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, spe
         data=[make_scatter(h0)],
         frames=frames,
         layout=go.Layout(
-            mapbox=dict(style=MAP_STYLE, center=NY_CENTER, zoom=10),
+            map=dict(style=MAP_STYLE, center=NY_CENTER, zoom=10),
             height=700,
             margin=dict(l=0, r=0, t=10, b=110),
             showlegend=False,
