@@ -218,7 +218,7 @@ def build_cluster_fig(dow: int, algo: str, hour_threshold: int, metric: str, spe
         elif algo == "HDBSCAN":
             labels = HDBSCAN(min_cluster_size=min_cs, min_samples=min_s_hdb,
                              cluster_selection_method=method,
-                             metric=metric, n_jobs=-1).fit_predict(X)
+                             metric=metric, n_jobs=-1, copy=False).fit_predict(X)
         else:  # KMeans
             labels = KMeans(n_clusters=n_clusters, random_state=42,
                             n_init="auto").fit_predict(X)
