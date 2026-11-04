@@ -41,15 +41,35 @@ def load_data() -> pd.DataFrame:
     if _LOCAL_DATA.exists():
         return pd.read_parquet(_LOCAL_DATA)
     # Production (Streamlit Cloud) : lecture depuis S3
-    aws = st.secrets.get("aws", {})
-    if aws:
-        os.environ.setdefault("AWS_ACCESS_KEY_ID",     aws["access_key_id"])
-        os.environ.setdefault("AWS_SECRET_ACCESS_KEY", aws["secret_access_key"])
-        os.environ.setdefault("AWS_DEFAULT_REGION",    aws.get("region", "eu-west-3"))
-    return pd.read_parquet(_S3_DATA)
+    try:
+        aws = st.secrets.get("aws", {})
+    except Exception:  # aucun secrets.toml / Secrets non configurés
+        aws = {}
+    if not aws or "access_key_id" not in aws or "secret_access_key" not in aws:
+        raise RuntimeError(
+            "Secrets AWS manquants : définir [aws] access_key_id / secret_access_key "
+            "(Streamlit Cloud → Settings → Secrets)."
+        )
+    # Identifiants passés explicitement à s3fs (prioritaires sur l'environnement)
+    storage_options = {
+        "key":    aws["access_key_id"],
+        "secret": aws["secret_access_key"],
+        "client_kwargs": {"region_name": aws.get("region", "eu-west-3")},
+    }
+    try:
+        return pd.read_parquet(_S3_DATA, storage_options=storage_options)
+    except PermissionError as e:
+        raise RuntimeError(
+            f"Accès S3 refusé sur {_S3_DATA} : vérifier la clé IAM dans les Secrets "
+            "(ancienne clé révoquée ou policy sans accès à ce bucket)."
+        ) from e
 
 
-df_all = load_data()
+try:
+    df_all = load_data()
+except RuntimeError as err:
+    st.error(str(err))
+    st.stop()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
