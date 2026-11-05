@@ -145,3 +145,7 @@ access_key_id = "AKIA..."
 secret_access_key = "..."
 region = "eu-west-3"
 ```
+
+Utiliser la clé du user IAM dédié `cdsd-uber` (lecture/écriture limitée au bucket `cdsd-uber-data`), la même
+que dans `.env` : voir [`docs/iam-aws.md`](docs/iam-aws.md) (droits, rotation, dépannage 403). Après un
+changement de clé, mettre à jour ces Secrets puis redémarrer l'app.
